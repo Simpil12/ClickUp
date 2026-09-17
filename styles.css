@@ -1,0 +1,47 @@
+:root {
+    --text-color: black;
+    --primary-color: #333333;
+    --base-variant: #e0e0e0; 
+}
+
+.dark-mode {
+    background-color: black;
+    --text-color: white; /* Changes the variable value in dark mode */
+    --primary-color: #ffffff;
+    --base-variant: #222222; 
+}
+
+.clicks-up {
+    color: var(--text-color); /* Automatically updates */
+}
+body {
+  text-align: center;
+}
+
+* {
+  outline: none;
+}
+
+#theme-switch {
+  height: 50px;
+  width: 50px;
+  padding: 0;
+  border-radius: 50%;
+  background-color: var(--base-variant);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--primary-color);
+}
+#theme-switch svg path {
+  fill: var(--primary-color) !important;
+}
+#theme-switch svg:last-child {
+  display: none;
+}
+.dark-mode #theme-switch svg:first-child {
+  display: none;
+}
+.dark-mode #theme-switch svg:last-child {
+  display: block;
+}
