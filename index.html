@@ -17,14 +17,14 @@
     </header>
     <p id="clicksUp" class="clicks-up">0 Times Clicked</p>
     <div id="navigateButtons">
-        <button onclick="tab('clickMenu')">Generation</button>
-        <button onclick="tab('upgradeMenu')">Upgrade</button>
+        <a href="#" onclick="tab('clickMenu'); return false;">Generation</a>
+        <a href="#" onclick="tab('upgradeMenu'); return false;">Upgrade</a>
     </div>
     <div id="clickMenu">
-        <button onclick="clicksUp()">Click</button>
+        <a href="#" onclick="clicksUp(); return false;">Click</a>
     </div>
     <div id="upgradeMenu">
-        <button onclick="buyClicksPerClick()" id="perClickUpgrade">Upgrade Click (Currently Level 1) Cost: 10 Clicks</button>
+        <a href="#" onclick="buyClicksPerClick(); return false;" id="perClickUpgrade">Upgrade Click (Currently Level 1) Cost: 10 Clicks</a>
     </div>
 </body>
 </html>

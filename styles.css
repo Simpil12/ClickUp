@@ -1,25 +1,40 @@
 :root {
     --text-color: black;
-    --primary-color: #333333;
+    --primary-color: rgb(34, 34, 34);
     --base-variant: #e0e0e0; 
+    --background-color: white;
+    --btn-bg: #dfdfdf;
+    --btn-text: #1e293b;
+    --btn-border: #707070;
+    --btn-hover: #747474;
 }
 
 .dark-mode {
-    background-color: black;
-    --text-color: white; /* Changes the variable value in dark mode */
+    background-color: rgb(34, 34, 34);
+    --text-color: white; 
     --primary-color: #ffffff;
     --base-variant: #222222; 
+    --btn-bg: #161616;         
+    --btn-text: #f8fafc;       
+    --btn-border: #666666;     
+    --btn-hover: #717274;  
 }
 
 .clicks-up {
-    color: var(--text-color); /* Automatically updates */
+    color: var(--text-color); 
 }
+
 body {
   text-align: center;
+  box-sizing: border-box;
 }
 
 * {
   outline: none;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
 #theme-switch {
@@ -46,11 +61,46 @@ body {
   display: block;
 }
 
-#upgradeMenu {
-    display: none;
+#navigateButtons a {
+    display: inline-block;
+    padding: 8px 24px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border: 2px solid var(--btn-border);
+    cursor: pointer;
+
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    margin-right: 5px;
+    margin-left: 5px;
 }
 
-#clickMenu, #upgradeMenu {
-    margin-top: 20px;
-    padding: 10px;
+#navigateButtons a:hover {
+    background-color: var(--btn-hover);
+}
+
+#clickMenu a, #upgradeMenu a {
+    display: inline-block;
+    padding: 10px 24px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border: 2px solid var(--btn-border);
+    cursor: pointer;
+    
+    margin-left: 14px; 
+}
+
+#clickMenu a:hover, #upgradeMenu a:hover {
+    background-color: var(--btn-hover);
 }

@@ -39,7 +39,7 @@ function tab(tabId) {
 
     if (clickMenu) clickMenu.style.display = "none";
     if (upgradeMenu) upgradeMenu.style.display = "none";
-    if (targetTab) targetTab.style.display = "inline-block";
+    if (targetTab) targetTab.style.display = "block";
 }
 
 tab("clickMenu")
