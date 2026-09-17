@@ -9,7 +9,8 @@ var gameData = {
 }
 
 function update(id, content) {
-  document.getElementById(id).innerHTML = content;
+    var el = document.getElementById(id);
+    document.getElementById(id).innerHTML = content;
 }
 
 function updateUI() {
@@ -31,26 +32,37 @@ function buyClicksPerClick() {
     }
 }
 
-function tab(tab) {
-    document.getElementById("clickMenu").style.display = "none";
-    document.getElementById("upgradeMenu").style.display = "none";
-    document.getElementById(tab).style.display = "inline-block";
+function tab(tabId) {
+    var clickMenu = document.getElementById("clickMenu");
+    var upgradeMenu = document.getElementById("upgradeMenu");
+    var targetTab = document.getElementById(tabId);
+
+    if (clickMenu) clickMenu.style.display = "none";
+    if (upgradeMenu) upgradeMenu.style.display = "none";
+    if (targetTab) targetTab.style.display = "inline-block";
 }
 
 tab("clickMenu")
 
-var mainGameLoop = window.setInterval(function() {
-    diff = Date.now() - gameData.lastTick;
-    gameData.lastTick = Date.now();
-    gameData.clicks += gameData.clicksPerClick * (diff / 1000);
-    updateUI()
-}, 1000)
+window.addEventListener("DOMContentLoaded", function() {
+    tab("clickMenu");
+    updateUI();
 
-var saveGameLoop = window.setInterval(function() {
-    localStorage.setItem("clicksUpSave", JSON.stringify(gameData))
-}, 15000)
+    // Start loops after UI elements are guaranteed to exist
+    window.setInterval(function() {
+        var diff = Date.now() - gameData.lastTick;
+        gameData.lastTick = Date.now();
+        gameData.clicks += gameData.clicksPerClick * (diff / 1000);
+        updateUI();
+    }, 1000);
+
+    window.setInterval(function() {
+        localStorage.setItem("clicksUpSave", JSON.stringify(gameData));
+    }, 15000);
+});
 
 function format(number, type) {
+    if (number === 0) return "0.0";
 	let exponent = Math.floor(Math.log10(number))
 	let mantissa = number / Math.pow(10, exponent)
 	if (exponent < 3) return number.toFixed(1)
