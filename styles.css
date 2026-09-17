@@ -45,3 +45,12 @@ body {
 .dark-mode #theme-switch svg:last-child {
   display: block;
 }
+
+#upgradeMenu {
+    display: none;
+}
+
+#clickMenu, #upgradeMenu {
+    margin-top: 20px;
+    padding: 10px;
+}
