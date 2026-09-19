@@ -5,8 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Click Up</title>
-    <script type="text/javascript" src="darkmode.js" defer></script>
-    <script src="main.js" charset="utf-8" type="text/javascript" defer></script>
 </head>
 <body>
     <header>
@@ -16,15 +14,27 @@
         </button>
     </header>
     <p id="clicksUp" class="clicks-up">0 Times Clicked</p>
-    <div id="navigateButtons">
-        <a href="#" onclick="tab('clickMenu'); return false;">Generation</a>
-        <a href="#" onclick="tab('upgradeMenu'); return false;">Upgrade</a>
+    <div id="allButtons">
+        <div id="navigateButtons">
+            <a href="#" onclick="tab('clickMenu'); return false;">Generation</a>
+            <a href="#" onclick="tab('upgradeMenu'); return false;">Upgrade</a>
+        </div>
+        <div id="clickMenu">
+            <a href="#" onclick="clicksUp(); return false;">Click</a>
+        </div>
+        <div id="upgradeMenu">
+            <a href="#" onclick="buyClicksPerClick(); return false;" id="perClickUpgrade">Upgrade Click (Currently Level 1) Cost: 5 Clicks</a>
+            <a href="#" onclick="buyClicksUpgrade(); return false;" id="clicksUpgrade">Upgrade Idle Click Gain (Currently Level 1) Cost: 10 Clicks</a>
+        </div>
     </div>
-    <div id="clickMenu">
-        <a href="#" onclick="clicksUp(); return false;">Click</a>
+    <div id="offlinePopup" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Welcome Back!</h2>
+            <p id="offlineReport">You earned 0 Clicks while you were away.</p>
+            <a href="#" onclick="closeOfflinePopup()">Awesome!</a>
+        </div>
     </div>
-    <div id="upgradeMenu">
-        <a href="#" onclick="buyClicksPerClick(); return false;" id="perClickUpgrade">Upgrade Click (Currently Level 1) Cost: 10 Clicks</a>
-    </div>
+    <script type="text/javascript" src="darkmode.js"></script>
+    <script src="main.js" charset="utf-8" type="text/javascript"></script>
 </body>
 </html>
