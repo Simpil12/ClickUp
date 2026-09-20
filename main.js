@@ -3,10 +3,11 @@ var saveGame = rawSave !== null ? JSON.parse(rawSave) : null;
 
 var gameData = {
     clicks: 0,
-    clicksPerSecond: 1,
+    clicksPerSecond: 0,
     clicksPerClick: 1,
     clicksPerClickCost: 5,
     clicksUpgradeCost: 10,
+    clicksUpgradeLevel: 0,
     lastTick: Date.now()
 }
 
@@ -23,8 +24,14 @@ function saveGameData() {
 
 function updateUI() {
     update("clicksUp", format(gameData.clicks, "scientific") + " Times Clicked");
+    
     update("perClickUpgrade", "Upgrade Click (Currently Level " + format(gameData.clicksPerClick, "scientific") + ")<br>Cost: " + format(gameData.clicksPerClickCost, "scientific") + " Clicks");
-    update("clicksUpgrade", "Upgrade Idle Click Gain (Currently Level " + format(gameData.clicksPerSecond, "scientific") + ")<br>Cost: " + format(gameData.clicksUpgradeCost, "scientific") + " Clicks");
+    
+    if (gameData.clicksUpgradeLevel === 0) {
+        update("clicksUpgrade", "Unlock Automation<br>Cost: " + format(gameData.clicksUpgradeCost, "scientific") + " Clicks");
+    } else {
+        update("clicksUpgrade", "Upgrade Idle Click Gain (Currently Level " + format(gameData.clicksUpgradeLevel, "scientific") + ")<br>Cost: " + format(gameData.clicksUpgradeCost, "scientific") + " Clicks");
+    }
 }
 
 function clicksUp() {
@@ -44,9 +51,17 @@ function buyClicksPerClick() {
 
 function buyClicksUpgrade() {
     if (gameData.clicks >= gameData.clicksUpgradeCost) {
-        gameData.clicks -= gameData.clicksUpgradeCost
-        gameData.clicksPerSecond *= 2
-        gameData.clicksUpgradeCost *= 2
+        gameData.clicks -= gameData.clicksUpgradeCost;
+
+        if (gameData.clicksUpgradeLevel === 0) {
+            gameData.clicksUpgradeLevel = 1;
+            gameData.clicksPerSecond = 1;
+        } else {
+            gameData.clicksUpgradeLevel += 1;
+            gameData.clicksPerSecond *= 2;
+        }
+
+        gameData.clicksUpgradeCost *= 2; 
         updateUI();
         saveGameData();
     }
@@ -64,15 +79,37 @@ function tab(tabId) {
 }
 
 function format(number, type) {
-    if (number === 0) return "0.0";
+    if (number < 0) return "-" + format(Math.abs(number), type);
+    if (number === 0) return "0";
     if (number < 1) return number.toFixed(1);
-	let exponent = Math.floor(Math.log10(number))
-	let mantissa = number / Math.pow(10, exponent)
-    if (exponent < 3) {
-        return number % 1 === 0 ? number.toFixed(0) : number.toFixed(1);
+
+    if (number < 1000000) {
+        if (number % 1 === 0) {
+            return Math.floor(number).toLocaleString(); 
+        } else {
+            return Math.floor(number).toLocaleString() + "." + (number % 1).toFixed(1).slice(2);
+        }
     }
-	if (type == "scientific") return mantissa.toFixed(2) + "e" + exponent
-	if (type == "engineering") return (Math.pow(10, exponent % 3) * mantissa).toFixed(2) + "e" + (Math.floor(exponent / 3) * 3)
+
+    const suffixes = [
+        { limit: 1e12, div: 1e9, suffix: "B" },
+        { limit: 1e9,  div: 1e6, suffix: "M" }
+    ];
+
+    for (const item of suffixes) {
+        if (number >= item.div && number < item.limit) {
+            return (number / item.div).toFixed(2) + item.suffix;
+        }
+    }
+
+    let exponent = Math.floor(Math.log10(number));
+    let mantissa = number / Math.pow(10, exponent);
+
+    if (type === "engineering") {
+        return (Math.pow(10, exponent % 3) * mantissa).toFixed(2) + "e" + (Math.floor(exponent / 3) * 3);
+    }
+    
+    return mantissa.toFixed(2) + "e" + exponent;
 }
 
 if (saveGame !== null) {
@@ -82,6 +119,7 @@ if (saveGame !== null) {
     if (typeof saveGame.lastTick !== "undefined") gameData.lastTick = saveGame.lastTick;
     if (typeof saveGame.clicksPerSecond !== "undefined") gameData.clicksPerSecond = saveGame.clicksPerSecond;
     if (typeof saveGame.clicksUpgradeCost !== "undefined") gameData.clicksUpgradeCost = saveGame.clicksUpgradeCost;
+    if (typeof saveGame.clicksUpgradeLevel !== "undefined") gameData.clicksUpgradeLevel = saveGame.clicksUpgradeLevel;
     if (typeof saveGame.lastTick !== "undefined") {
         var offlineTime = (Date.now() - parseFloat(saveGame.lastTick)) / 1000;
 
@@ -121,3 +159,10 @@ window.addEventListener("DOMContentLoaded", function() {
 function closeOfflinePopup() {
     document.getElementById("offlinePopup").style.display = "none";
 }
+
+setInterval(function() {
+    if (gameData.clicksPerSecond > 0) {
+        gameData.clicks += gameData.clicksPerSecond;
+        updateUI();
+    }
+}, 1000); 
