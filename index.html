@@ -19,15 +19,15 @@
     </div>
     <div id="mainButtons">
         <div id="navigateButtons">
-            <a href="#" onclick="tab('clickMenu'); return false;">Generation</a>
-            <a href="#" onclick="tab('upgradeMenu'); return false;">Upgrade</a>
+            <a href="#" onclick="tab('clickMenu'); return false;">Manual</a>
+            <a href="#" onclick="tab('upgradeMenu'); return false;">Automation</a>
         </div>
         <div id="clickMenu">
             <a href="#" onclick="clicksUp(event); return false;">Click</a>
+            <a href="#" onclick="buyClicksPerClick(); return false;" id="perClickUpgrade">Upgrade Click (Currently Level 1) Cost: 5 Clicks</a>
         </div>
         <div id="upgradeMenu">
-            <a href="#" onclick="buyClicksPerClick(); return false;" id="perClickUpgrade">Upgrade Click (Currently Level 1) Cost: 5 Clicks</a>
-            <a href="#" onclick="buyClicksUpgrade(); return false;" id="clicksUpgrade">Upgrade Idle Click Gain (Currently Level 1) Cost: 10 Clicks</a>
+            <a href="#" onclick="buyClicksUpgrade(); return false;" id="buyRobots">Upgrade Idle Click Gain (Currently Level 1) Cost: 10 Clicks</a>
             <a href="#" onclick="buyAutoRobot(); return false;" id="robotUpgrade">Buy Auto-Robot (Currently Level 0) Cost: 150 Clicks</a>
         </div>
     </div>

@@ -15,6 +15,8 @@ var gameData = {
     robotCPSContribution: 5
 }
 
+var isResetting = false;
+
 function update(id, content) {
     var el = document.getElementById(id);
     if (el) {
@@ -23,6 +25,7 @@ function update(id, content) {
 }
 
 function saveGameData() {
+    if (isResetting === true) return;
     localStorage.setItem("clicksUpSave", JSON.stringify(gameData));
 }
 
@@ -40,13 +43,15 @@ function handleButtonState(id, cost) {
 function updateUI() {
     update("clicksUp", format(gameData.clicks, "scientific") + " Times Clicked");
     update("perClickUpgrade", "Upgrade Click (Currently Level " + format(gameData.clicksPerClick, "scientific") + ")<br>Cost: " + format(gameData.clicksPerClickCost, "scientific") + " Clicks");
-    update("clicksUpgrade", "Upgrade Idle Click Gain (Currently Level " + format(gameData.clicksUpgradeLevel, "scientific") + ")<br>Cost: " + format(gameData.clicksUpgradeCost, "scientific") + " Clicks");
+    update("buyRobots", "Buy Robots (Owned: " + format(gameData.clicksUpgradeLevel, "scientific") + ")<br>[Generates +5 Base CPS Each]<br>Cost: " + format(gameData.clicksUpgradeCost, "scientific") + " Clicks");
+
     update("cpsDisplay", format(gameData.clicksPerSecond, "scientific") + " Clicks/Sec");
     update("cpcDisplay", format(gameData.clicksPerClick, "scientific") + " Clicks/Click");
-    update("robotUpgrade", "Robots (Currently Level " + format(gameData.robotLevel, "scientific") + ")<br>Cost: " + format(gameData.robotCost, "scientific") + " Clicks");
-
+    
+    update("robotUpgrade", "Overclock Robots (Level " + format(gameData.robotLevel, "scientific") + ")<br>[Doubles Robot Power]<br>Cost: " + format(gameData.robotCost, "scientific") + " Clicks");
+    
     var unlockBtn = document.getElementById("unlockAutomationBtn");
-    var upgradeBtn = document.getElementById("clicksUpgrade");
+    var upgradeBtn = document.getElementById("buyRobots");
 
     if (unlockBtn && upgradeBtn) {
         var robotBtn = document.getElementById("robotUpgrade");
@@ -67,13 +72,15 @@ function updateUI() {
             
             upgradeBtn.style.display = "inline-block";
             if (robotBtn) robotBtn.style.display = "inline-block";
-            handleButtonState("clicksUpgrade", gameData.clicksUpgradeCost);
+            
+            handleButtonState("buyRobots", gameData.clicksUpgradeCost);
+            handleButtonState("robotUpgrade", gameData.robotCost);
         }
     }
 
     handleButtonState("perClickUpgrade", gameData.clicksPerClickCost);
-    handleButtonState("robotUpgrade", gameData.robotCost);
 }
+
 function clicksUp(event) {
     gameData.clicks += gameData.clicksPerClick;
     updateUI();
@@ -98,6 +105,17 @@ function createClickParticle(x, y, textValue) {
     }, 800);
 }
 
+function recalculateCPS() {
+    var robotPowerMultiplier = Math.pow(2, gameData.robotLevel); 
+    var baseCPS = gameData.clicksUpgradeLevel * gameData.robotCPSContribution * robotPowerMultiplier;
+
+    if (baseCPS > 1000000) {
+        gameData.clicksPerSecond = 1000000 + Math.sqrt(baseCPS - 1000000);
+    } else {
+        gameData.clicksPerSecond = baseCPS;
+    }
+}
+
 function buyClicksPerClick() {
     var nextCost = Math.floor(5 * Math.pow(1.5, gameData.clicksPerClick - 1));
 
@@ -115,13 +133,11 @@ function buyClicksPerClick() {
 function buyClicksUpgrade() {
     if (gameData.clicks >= gameData.clicksUpgradeCost) {
         gameData.clicks -= gameData.clicksUpgradeCost;
-
         gameData.clicksUpgradeLevel += 1;
 
-        gameData.clicksPerSecond += 1; 
+        gameData.clicksUpgradeCost = Math.floor(10 * Math.pow(1.15, gameData.clicksUpgradeLevel));
 
-        gameData.clicksUpgradeCost = Math.floor(10 * Math.pow(1.6, gameData.clicksUpgradeLevel)); 
-        
+        recalculateCPS(); 
         updateUI();
         saveGameData();
     }
@@ -131,9 +147,10 @@ function buyAutoRobot() {
     if (gameData.clicks >= gameData.robotCost) {
         gameData.clicks -= gameData.robotCost;
         gameData.robotLevel += 1;
-        gameData.clicksPerSecond += gameData.robotCPSContribution;
-        gameData.robotCost = Math.floor(150 * Math.pow(1.15, gameData.robotLevel));
-        
+
+        gameData.robotCost = Math.floor(150 * Math.pow(1.5, gameData.robotLevel));
+
+        recalculateCPS();
         updateUI();
         saveGameData();
     }
@@ -159,8 +176,10 @@ function tab(tabId) {
 
     if (clickMenu) clickMenu.style.display = "none";
     if (upgradeMenu) upgradeMenu.style.display = "none";
-    if (targetTab) targetTab.style.display = "block";
-    if (targetTab) targetTab.style.display = "flex"; 
+
+    if (targetTab) {
+        targetTab.style.display = "flex"; 
+    }
 }
 
 function format(number, type) {
@@ -206,9 +225,14 @@ if (saveGame !== null) {
         }
     }
 
+    if (gameData.automationUnlocked === "false") gameData.automationUnlocked = false;
+    if (gameData.automationUnlocked === "true") gameData.automationUnlocked = true;
+
     gameData.clicksPerClickCost = Math.floor(5 * Math.pow(1.5, gameData.clicksPerClick - 1));
-    gameData.clicksUpgradeCost = Math.floor(10 * Math.pow(1.6, gameData.clicksUpgradeLevel));
-    gameData.robotCost = Math.floor(150 * Math.pow(1.15, gameData.robotLevel));
+    gameData.clicksUpgradeCost = Math.floor(10 * Math.pow(1.15, gameData.clicksUpgradeLevel));
+    gameData.robotCost = Math.floor(150 * Math.pow(1.5, gameData.robotLevel));
+    
+    recalculateCPS();
 
     if (typeof saveGame.lastTick !== "undefined") {
         var offlineTime = (Date.now() - parseFloat(saveGame.lastTick)) / 1000;
@@ -253,13 +277,17 @@ function closeOfflinePopup() {
 
 function hardReset() {
     if (confirm("Are you absolutely sure you want to delete your save file? This cannot be undone!")) {
+        isResetting = true;
+
         localStorage.removeItem("clicksUpSave");
         
         gameData.clicks = 0;
         gameData.clicksPerSecond = 0;
         gameData.clicksPerClick = 1;
+        gameData.clicksUpgradeLevel = 0;
         gameData.robotLevel = 0;
-        
+        recalculateCPS();
+        gameData.automationUnlocked = false;
         window.location.href = window.location.pathname;
     }
 }

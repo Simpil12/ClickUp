@@ -118,12 +118,38 @@ body {
 
 #clickMenu {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; 
+    max-height: 300px; 
+    overflow-y: auto;  
+    width: 100%;
+    padding: 5px 10px;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: var(--btn-border) transparent;
 }
 
 #clickMenu a {
-    width: 100px;
-    height: 40px;
+  width: 250px;
+  margin-bottom: 10px;
+}
+
+#clickMenu::-webkit-scrollbar {
+    width: 6px;
+}
+
+#clickMenu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#clickMenu::-webkit-scrollbar-thumb {
+    background-color: var(--btn-border);
+    border-radius: 10px;
+}
+
+#clickMenu::-webkit-scrollbar-thumb:hover {
+    background-color: var(--btn-hover);
 }
 
 #upgradeMenu {
@@ -166,7 +192,7 @@ body {
   display: inline-block;
 }
 
-#clicksUpgrade {
+#buyRobots {
     display: none;
 }
 
