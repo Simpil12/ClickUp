@@ -14,6 +14,9 @@
         </button>
     </header>
     <p id="clicksUp" class="clicks-up">0 Times Clicked</p>
+    <div id="statsPanel" class="stats-panel">
+    <span id="cpsDisplay">0 Clicks/Sec</span> | <span id="cpcDisplay">1 Clicks/Click</span>
+    </div>
     <div id="mainButtons">
         <div id="navigateButtons">
             <a href="#" onclick="tab('clickMenu'); return false;">Generation</a>
@@ -26,6 +29,13 @@
             <a href="#" onclick="buyClicksPerClick(); return false;" id="perClickUpgrade">Upgrade Click (Currently Level 1) Cost: 5 Clicks</a>
             <a href="#" onclick="buyClicksUpgrade(); return false;" id="clicksUpgrade">Upgrade Idle Click Gain (Currently Level 1) Cost: 10 Clicks</a>
         </div>
+    </div>
+    <div class="bottomHalf">
+        <h2>Unlocks</h2>
+        <div id="unlocksTab">
+            <a href="#" onclick="unlockAutomation(); return false;" id="unlockAutomationBtn">Unlock Automation - Cost: 50 Clicks</a>
+        </div>
+        <a href="#" onclick="hardReset(); return false;" id="resetBtn" class="reset-button">Hard Reset Game</a>
     </div>
     <div id="offlinePopup" class="modal-overlay">
         <div class="modal-content">
