@@ -9,8 +9,10 @@ var gameData = {
     clicksUpgradeCost: 10,
     clicksUpgradeLevel: 0,
     lastTick: Date.now(),
-
-    automationUnlocked: false
+    automationUnlocked: false,
+    robotLevel: 0,
+    robotCost: 150,
+    robotCPSContribution: 5
 }
 
 function update(id, content) {
@@ -41,17 +43,21 @@ function updateUI() {
     update("clicksUpgrade", "Upgrade Idle Click Gain (Currently Level " + format(gameData.clicksUpgradeLevel, "scientific") + ")<br>Cost: " + format(gameData.clicksUpgradeCost, "scientific") + " Clicks");
     update("cpsDisplay", format(gameData.clicksPerSecond, "scientific") + " Clicks/Sec");
     update("cpcDisplay", format(gameData.clicksPerClick, "scientific") + " Clicks/Click");
+    update("robotUpgrade", "Robots (Currently Level " + format(gameData.robotLevel, "scientific") + ")<br>Cost: " + format(gameData.robotCost, "scientific") + " Clicks");
 
     var unlockBtn = document.getElementById("unlockAutomationBtn");
     var upgradeBtn = document.getElementById("clicksUpgrade");
 
     if (unlockBtn && upgradeBtn) {
+        var robotBtn = document.getElementById("robotUpgrade");
+
         if (gameData.automationUnlocked === false) {
             unlockBtn.classList.remove("btn-disabled");
             unlockBtn.innerHTML = "Unlock Automation - Cost: 50 Clicks";
             unlockBtn.style.display = "inline-block";
             
             upgradeBtn.style.display = "none";
+            if (robotBtn) robotBtn.style.display = "none";
 
             handleButtonState("unlockAutomationBtn", 50);
         } else {
@@ -60,23 +66,47 @@ function updateUI() {
             unlockBtn.style.display = "inline-block";
             
             upgradeBtn.style.display = "inline-block";
-
+            if (robotBtn) robotBtn.style.display = "inline-block";
             handleButtonState("clicksUpgrade", gameData.clicksUpgradeCost);
         }
     }
 
     handleButtonState("perClickUpgrade", gameData.clicksPerClickCost);
+    handleButtonState("robotUpgrade", gameData.robotCost);
 }
-function clicksUp() {
-    gameData.clicks += gameData.clicksPerClick
-    updateUI()
+function clicksUp(event) {
+    gameData.clicks += gameData.clicksPerClick;
+    updateUI();
+
+    if (event && event.clientX && event.clientY) {
+        createClickParticle(event.clientX, event.clientY, "+" + format(gameData.clicksPerClick, "scientific"));
+    }
+}
+
+function createClickParticle(x, y, textValue) {
+    var particle = document.createElement("div");
+    particle.className = "click-particle";
+    particle.innerText = textValue;
+
+    particle.style.left = (x - 10) + "px";
+    particle.style.top = (y - 20) + "px";
+
+    document.body.appendChild(particle);
+
+    setTimeout(function() {
+        particle.remove();
+    }, 800);
 }
 
 function buyClicksPerClick() {
-    if (gameData.clicks >= gameData.clicksPerClickCost) {
-        gameData.clicks -= gameData.clicksPerClickCost
-        gameData.clicksPerClick += 1
-        gameData.clicksPerClickCost *= 2
+    var nextCost = Math.floor(5 * Math.pow(1.5, gameData.clicksPerClick - 1));
+
+    if (gameData.clicks >= nextCost) {
+        gameData.clicks -= nextCost;
+        gameData.clicksPerClick += 1;
+
+        gameData.clicksPerClickCost = Math.floor(5 * Math.pow(1.5, gameData.clicksPerClick - 1));
+        
         updateUI();
         saveGameData();
     }
@@ -86,15 +116,24 @@ function buyClicksUpgrade() {
     if (gameData.clicks >= gameData.clicksUpgradeCost) {
         gameData.clicks -= gameData.clicksUpgradeCost;
 
-        if (gameData.clicksUpgradeLevel === 0) {
-            gameData.clicksUpgradeLevel = 1;
-            gameData.clicksPerSecond = 1;
-        } else {
-            gameData.clicksUpgradeLevel += 1;
-            gameData.clicksPerSecond *= 2;
-        }
+        gameData.clicksUpgradeLevel += 1;
 
-        gameData.clicksUpgradeCost *= 2; 
+        gameData.clicksPerSecond += 1; 
+
+        gameData.clicksUpgradeCost = Math.floor(10 * Math.pow(1.6, gameData.clicksUpgradeLevel)); 
+        
+        updateUI();
+        saveGameData();
+    }
+}
+
+function buyAutoRobot() {
+    if (gameData.clicks >= gameData.robotCost) {
+        gameData.clicks -= gameData.robotCost;
+        gameData.robotLevel += 1;
+        gameData.clicksPerSecond += gameData.robotCPSContribution;
+        gameData.robotCost = Math.floor(150 * Math.pow(1.15, gameData.robotLevel));
+        
         updateUI();
         saveGameData();
     }
@@ -167,6 +206,10 @@ if (saveGame !== null) {
         }
     }
 
+    gameData.clicksPerClickCost = Math.floor(5 * Math.pow(1.5, gameData.clicksPerClick - 1));
+    gameData.clicksUpgradeCost = Math.floor(10 * Math.pow(1.6, gameData.clicksUpgradeLevel));
+    gameData.robotCost = Math.floor(150 * Math.pow(1.15, gameData.robotLevel));
+
     if (typeof saveGame.lastTick !== "undefined") {
         var offlineTime = (Date.now() - parseFloat(saveGame.lastTick)) / 1000;
 
@@ -211,6 +254,16 @@ function closeOfflinePopup() {
 function hardReset() {
     if (confirm("Are you absolutely sure you want to delete your save file? This cannot be undone!")) {
         localStorage.removeItem("clicksUpSave");
-        location.reload();
+        
+        gameData.clicks = 0;
+        gameData.clicksPerSecond = 0;
+        gameData.clicksPerClick = 1;
+        gameData.robotLevel = 0;
+        
+        window.location.href = window.location.pathname;
     }
 }
+
+window.addEventListener('beforeunload', () => {
+    saveGameData();
+});
