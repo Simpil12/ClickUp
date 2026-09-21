@@ -94,7 +94,7 @@ body {
     background-color: var(--btn-hover);
 }
 
-#clickMenu a, #upgradeMenu a {
+#clickMenu a, #upgradeMenu a, #rebirthMenu a {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -112,7 +112,7 @@ body {
     cursor: pointer;
 }
 
-#clickMenu a:hover, #upgradeMenu a:hover {
+#clickMenu a:hover, #upgradeMenu a:hover, #rebirthMenu a:hover {
     background-color: var(--btn-hover);
 }
 
@@ -188,6 +188,20 @@ body {
   margin-bottom: 10px;
 }
 
+#rebirthMenu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; 
+    max-height: 300px; 
+    overflow-y: auto;  
+    width: 100%;
+    padding: 5px 10px;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: var(--btn-border) transparent;
+}
+
 #mainButtons {
   display: inline-block;
 }
@@ -226,6 +240,14 @@ body {
 
 #unlocksTab a:hover {
     background-color: var(--btn-hover);
+}
+
+#automationMenu {
+    display: none; 
+}
+
+#rebirthTab {
+    display: none;
 }
 
 .modal-overlay {
