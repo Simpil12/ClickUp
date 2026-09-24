@@ -11,6 +11,8 @@ var gameData = {
     lastTick: Date.now(),
     automationUnlocked: false,
     rebootMenuUnlocked: false,
+    permanentAutomation: false,
+    permaAutoCost: 5,
     robotLevel: 0,
     robotCost: 150,
     robotCPSContribution: 5,
@@ -60,8 +62,21 @@ function handleButtonState(id, cost) {
     }
 }
 
+function handleRebirthButtonState(id, cost) {
+    var btn = document.getElementById(id);
+    if (!btn) return;
+    
+    if (gameData.reboots < cost) {
+        btn.classList.add("unaffordable");
+    } else {
+        btn.classList.remove("unaffordable");
+    }
+}
+
+
 function updateUI() {
     update("clicksUp", format(gameData.clicks, "scientific") + " Times Clicked");
+    update("reboots", format(gameData.reboots, "scientific") + " Times Rebooted");
     update("perClickUpgrade", "Upgrade Click (Currently Level " + format(gameData.clicksPerClick, "scientific") + ")<br>Cost: " + format(gameData.clicksPerClickCost, "scientific") + " Clicks");
     update("buyRobots", "Buy Robots (Owned: " + format(gameData.clicksUpgradeLevel, "scientific") + ")<br>[Generates 5 CPS Each]<br>Cost: " + format(gameData.clicksUpgradeCost, "scientific") + " Clicks");
     update("cpsDisplay", format(gameData.effectiveCPS, "scientific") + " Clicks/Sec");
@@ -71,10 +86,27 @@ function updateUI() {
 
     var rebirthTab = document.getElementById("rebirthTab");
     var rebirthButton = document.getElementById("buyRebirth");
+    var permaAutoBtn = document.getElementById("permanentAutomationBtn");
+    var rebirthUnlocks = document.getElementById("rebirthUnlocks")
+
     if (rebirthTab && rebirthButton) {
         var rebirthUnlocked = gameData.rebootMenuUnlocked === true;
         rebirthTab.style.display = rebirthUnlocked ? "inline-block" : "none";
         rebirthButton.style.display = rebirthUnlocked ? "flex" : "none";
+
+        handleButtonState("buyRebirth", gameData.rebootCost);
+
+        if (gameData.permanentAutomation === false) {
+            permaAutoBtn.classList.remove("btn-disabled");
+            permaAutoBtn.innerHTML = "Permanently Unlock Automation - Cost: 5 Reboots";
+            permaAutoBtn.style.display = "inline-block";
+
+            handleRebirthButtonState("permanentAutomationBtn", gameData.permaAutoCost);
+        } else {
+            permaAutoBtn.classList.add("btn-disabled");
+            permaAutoBtn.innerHTML = "Permanently Unlock Automation - Bought";
+            permaAutoBtn.style.display = "inline-block";
+        }
     }
 
     var unlockBtn = document.getElementById("unlockAutomationBtn");
@@ -107,6 +139,17 @@ function updateUI() {
         }
     }
 
+    var rebootsDisplay = document.getElementById("reboots")
+    var clicksDisplay = document.getElementById("clicksUp")
+
+    if (gameData.reboots > 0) {
+        rebootsDisplay.style.display = "inline-block";
+        clicksDisplay.style.textAlign = "right";
+    } else {
+        rebootsDisplay.style.display = "none";
+        clicksDisplay.style.textAlign = "center";
+    }
+
     handleButtonState("perClickUpgrade", gameData.clicksPerClickCost);
 }
 
@@ -115,6 +158,11 @@ function recalculateMulti() {
     gameData.totalMultiplier = gameData.rebootMultiplier;
     calculateCPC();
     calculateCPS();
+    updateUI();
+}
+
+function recalculateRebootCost() {
+    gameData.rebootCost = 10000000 * Math.pow(1.5, gameData.reboots);
     updateUI();
 }
 
@@ -220,17 +268,35 @@ function unlockAutomation() {
     }
 }
 
+function permanentAutomation() {
+    if (gameData.permanentAutomation === true) return;
+
+    if (gameData.reboots >= gameData.permaAutoCost) {
+        gameData.reboots -= gameData.permaAutoCost;
+        gameData.permanentAutomation = true;
+        updateUI();
+        saveGame();
+    }
+}
+
 function reboot() {
     var rebootCost = 10000000 * Math.pow(1.5, gameData.reboots);
-    gameData.rebootCost = rebootCost;
 
     if (gameData.clicks < rebootCost) return;
 
     for (var key in defaultGameData) {
+        if (key === 'automationUnlocked' && gameData.permanentAutomation === true) {
+            continue;
+        }
+
         gameData[key] = defaultGameData[key];
     }
+    
     gameData.reboots += 1;
 
+    tab(clickMenu);
+
+    recalculateRebootCost();
     recalculateMulti();
     saveGameData();
     updateUI();
@@ -251,6 +317,7 @@ function tab(tabId) {
     var upgradeMenu = document.getElementById("upgradeMenu");
     var rebirthMenu = document.getElementById("rebirthMenu");
     var unlocksMenu = document.getElementById("unlocksTab");
+    var rebirthUnlocks = document.getElementById("rebirthUnlocks");
     var targetTab = document.getElementById(tabId);
 
     if (clickMenu) clickMenu.style.display = "none";
@@ -267,6 +334,12 @@ function tab(tabId) {
         } else {
             unlocksMenu.style.display = "none";
         }
+    }
+    
+    if (targetTab === rebirthMenu && gameData.reboots > 0) {
+        rebirthUnlocks.style.display = "inline-block";
+    } else {
+        rebirthUnlocks.style.display = "none";
     }
 }
 
@@ -324,6 +397,7 @@ if (saveGame !== null) {
 
     baseCPS();
     recalculateMulti();
+    recalculateRebootCost();
 
     if (typeof saveGame.lastTick !== "undefined") {
         var offlineTime = (Date.now() - parseFloat(saveGame.lastTick)) / 1000;
